@@ -3,224 +3,266 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Anket Mini App</title>
+  <title>Hür Yazılım</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --tg-bg: #0d1117;
-      --tg-surface: #161b22;
-      --tg-border: #21262d;
-      --tg-accent: #2ea6f5;
-      --tg-accent2: #1a8be0;
-      --tg-text: #e6edf3;
-      --tg-muted: #7d8590;
-      --tg-success: #3fb950;
-      --tg-error: #f85149;
+      --bg: #0d1117;
+      --surface: #161b22;
+      --border: #21262d;
+      --accent: #2ea6f5;
+      --accent2: #1a8be0;
+      --text: #e6edf3;
+      --muted: #7d8590;
+      --success: #3fb950;
       --radius: 16px;
     }
     * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-    body { background:var(--tg-bg); color:var(--tg-text); font-family:'DM Sans',sans-serif; min-height:100vh; padding:16px; overflow-x:hidden; }
+    body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; min-height:100vh; padding:16px; overflow-x:hidden; }
     body::before { content:''; position:fixed; inset:0; background: radial-gradient(ellipse 80% 50% at 50% -10%,rgba(46,166,245,.18) 0%,transparent 60%), radial-gradient(ellipse 40% 30% at 80% 80%,rgba(46,166,245,.07) 0%,transparent 50%); pointer-events:none; z-index:0; }
     .wrapper { position:relative; z-index:1; max-width:480px; margin:0 auto; }
 
-    .profile-card { background:var(--tg-surface); border:1px solid var(--tg-border); border-radius:var(--radius); padding:20px; display:flex; align-items:center; gap:14px; margin-bottom:20px; animation:slideDown .5s ease both; }
-    .avatar { width:52px; height:52px; border-radius:50%; background:linear-gradient(135deg,var(--tg-accent),#6e40c9); display:flex; align-items:center; justify-content:center; font-family:'Unbounded',sans-serif; font-size:18px; font-weight:700; color:#fff; flex-shrink:0; overflow:hidden; }
-    .avatar img { width:100%; height:100%; object-fit:cover; }
-    .profile-info h3 { font-family:'Unbounded',sans-serif; font-size:14px; font-weight:600; }
-    .profile-info p  { font-size:12px; color:var(--tg-muted); margin-top:2px; }
-    .badge { margin-left:auto; background:rgba(46,166,245,.15); border:1px solid rgba(46,166,245,.3); color:var(--tg-accent); font-size:11px; font-weight:500; padding:4px 10px; border-radius:20px; white-space:nowrap; }
+    /* Header */
+    .app-header { text-align:center; margin-bottom:28px; animation:slideDown .5s ease both; }
+    .app-logo { font-family:'Unbounded',sans-serif; font-size:26px; font-weight:700; background:linear-gradient(135deg,#e6edf3 30%,var(--accent)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+    .app-sub { font-size:12px; color:var(--muted); margin-top:6px; line-height:1.6; max-width:300px; margin-left:auto; margin-right:auto; }
 
-    .header { margin-bottom:24px; animation:slideDown .5s .1s ease both; }
-    .header h1 { font-family:'Unbounded',sans-serif; font-size:22px; font-weight:700; line-height:1.2; background:linear-gradient(135deg,#e6edf3 30%,var(--tg-accent)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
-    .header p { color:var(--tg-muted); font-size:13px; margin-top:6px; line-height:1.5; }
+    /* Progress */
+    .progress-wrap { margin-bottom:24px; animation:slideDown .5s .1s ease both; }
+    .progress-top { display:flex; justify-content:space-between; font-size:11px; color:var(--muted); margin-bottom:8px; }
+    .progress-bar { background:var(--border); border-radius:100px; height:5px; overflow:hidden; }
+    .progress-fill { height:100%; background:linear-gradient(90deg,var(--accent),#6e40c9); border-radius:100px; transition:width .5s cubic-bezier(.4,0,.2,1); }
 
-    .progress-label { display:flex; justify-content:space-between; font-size:11px; color:var(--tg-muted); margin-bottom:8px; animation:slideDown .5s .15s ease both; }
-    .progress-bar   { background:var(--tg-border); border-radius:100px; height:4px; margin-bottom:24px; overflow:hidden; animation:slideDown .5s .15s ease both; }
-    .progress-fill  { height:100%; background:linear-gradient(90deg,var(--tg-accent),#6e40c9); border-radius:100px; transition:width .4s cubic-bezier(.4,0,.2,1); }
-
-    .step { display:none; flex-direction:column; gap:12px; animation:fadeIn .35s ease both; }
+    /* Step card */
+    .step { display:none; flex-direction:column; gap:16px; animation:fadeIn .35s ease both; }
     .step.active { display:flex; }
-    .step-title { font-family:'Unbounded',sans-serif; font-size:13px; font-weight:600; margin-bottom:4px; }
 
-    .input-group { display:flex; flex-direction:column; gap:8px; }
-    .input-group label { font-size:12px; color:var(--tg-muted); font-weight:500; letter-spacing:.5px; text-transform:uppercase; }
-    input[type="text"], input[type="number"], textarea { background:var(--tg-surface); border:1.5px solid var(--tg-border); border-radius:12px; padding:14px 16px; color:var(--tg-text); font-family:'DM Sans',sans-serif; font-size:15px; width:100%; outline:none; transition:border-color .2s,box-shadow .2s; -webkit-appearance:none; }
-    input:focus, textarea:focus { border-color:var(--tg-accent); box-shadow:0 0 0 3px rgba(46,166,245,.12); }
-    textarea { resize:none; min-height:100px; line-height:1.5; }
+    .channel-card {
+      background:var(--surface);
+      border:1.5px solid var(--border);
+      border-radius:var(--radius);
+      padding:20px;
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
 
-    .options-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-    .option-btn { background:var(--tg-surface); border:1.5px solid var(--tg-border); border-radius:12px; padding:14px 12px; color:var(--tg-text); font-family:'DM Sans',sans-serif; font-size:13px; font-weight:500; cursor:pointer; transition:all .2s; text-align:center; user-select:none; }
-    .option-btn:active { transform:scale(.97); }
-    .option-btn.selected { background:rgba(46,166,245,.12); border-color:var(--tg-accent); color:var(--tg-accent); }
+    .channel-top { display:flex; align-items:center; gap:14px; }
+    .ch-avatar {
+      width:56px; height:56px; border-radius:50%;
+      background:linear-gradient(135deg,var(--accent),#6e40c9);
+      display:flex; align-items:center; justify-content:center;
+      font-size:24px; flex-shrink:0;
+    }
+    .ch-info h3 { font-family:'Unbounded',sans-serif; font-size:14px; font-weight:600; }
+    .ch-info p  { font-size:12px; color:var(--muted); margin-top:3px; line-height:1.5; }
 
-    .stars { display:flex; gap:10px; justify-content:center; padding:10px 0; }
-    .star { font-size:32px; cursor:pointer; transition:transform .15s,filter .15s; filter:grayscale(1) opacity(.4); user-select:none; }
-    .star.lit { filter:grayscale(0) opacity(1); }
-    .star:hover { transform:scale(1.2); }
+    .ch-tag {
+      display:inline-flex; align-items:center; gap:5px;
+      background:rgba(46,166,245,.12); border:1px solid rgba(46,166,245,.25);
+      color:var(--accent); font-size:11px; font-weight:600;
+      padding:4px 10px; border-radius:20px; width:fit-content;
+    }
 
-    .btn-row { display:flex; gap:10px; margin-top:8px; }
-    .btn { flex:1; padding:15px; border-radius:12px; border:none; font-family:'DM Sans',sans-serif; font-size:15px; font-weight:600; cursor:pointer; transition:all .2s; }
-    .btn:active { transform:scale(.98); }
-    .btn-primary { background:linear-gradient(135deg,var(--tg-accent),var(--tg-accent2)); color:#fff; box-shadow:0 4px 16px rgba(46,166,245,.3); }
-    .btn-primary:disabled { opacity:.5; cursor:not-allowed; transform:none; }
-    .btn-secondary { background:var(--tg-surface); border:1.5px solid var(--tg-border); color:var(--tg-muted); }
+    .disclaimer {
+      background:rgba(125,133,144,.08);
+      border:1px solid var(--border);
+      border-radius:10px;
+      padding:12px 14px;
+      font-size:11px;
+      color:var(--muted);
+      line-height:1.6;
+    }
+    .disclaimer strong { color:var(--text); display:block; margin-bottom:4px; font-size:12px; }
 
-    .spinner { display:inline-block; width:16px; height:16px; border:2px solid rgba(255,255,255,.3); border-top-color:#fff; border-radius:50%; animation:spin .7s linear infinite; margin-right:6px; vertical-align:middle; }
+    /* CTA Button */
+    .btn-cta {
+      width:100%; padding:16px;
+      background:linear-gradient(135deg,var(--accent),var(--accent2));
+      border:none; border-radius:12px;
+      color:#fff; font-family:'DM Sans',sans-serif;
+      font-size:15px; font-weight:700;
+      cursor:pointer; transition:all .2s;
+      box-shadow:0 4px 20px rgba(46,166,245,.35);
+      display:flex; align-items:center; justify-content:center; gap:8px;
+    }
+    .btn-cta:active { transform:scale(.98); }
+    .btn-cta:disabled { opacity:.5; cursor:not-allowed; }
+    .btn-cta .arrow { font-size:18px; transition:transform .2s; }
+    .btn-cta:hover .arrow { transform:translateX(4px); }
 
-    .toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px); background:var(--tg-surface); border:1px solid var(--tg-border); border-radius:12px; padding:12px 20px; font-size:13px; font-weight:500; box-shadow:0 8px 32px rgba(0,0,0,.4); z-index:999; white-space:nowrap; transition:transform .3s cubic-bezier(.34,1.56,.64,1); }
-    .toast.show { transform:translateX(-50%) translateY(0); }
-    .toast.success { border-color:var(--tg-success); color:var(--tg-success); }
-    .toast.error   { border-color:var(--tg-error);   color:var(--tg-error); }
+    .btn-next {
+      width:100%; padding:14px;
+      background:var(--surface);
+      border:1.5px solid var(--border);
+      border-radius:12px;
+      color:var(--muted); font-family:'DM Sans',sans-serif;
+      font-size:13px; font-weight:500;
+      cursor:pointer; transition:all .2s;
+      display:none; /* sadece tıklandıktan sonra görünür */
+    }
+    .btn-next.visible { display:block; animation:fadeIn .3s ease both; }
+    .btn-next:active { transform:scale(.98); }
 
-    .success-screen { display:none; flex-direction:column; align-items:center; text-align:center; padding:40px 20px; gap:16px; animation:fadeIn .4s ease both; }
+    /* Visited badge */
+    .visited-badge {
+      display:none;
+      align-items:center; gap:6px;
+      background:rgba(63,185,80,.1);
+      border:1px solid rgba(63,185,80,.3);
+      border-radius:10px; padding:10px 14px;
+      font-size:12px; color:var(--success); font-weight:500;
+    }
+    .visited-badge.show { display:flex; animation:fadeIn .3s ease both; }
+
+    /* Success screen */
+    .success-screen { display:none; flex-direction:column; align-items:center; text-align:center; padding:40px 20px; gap:18px; animation:fadeIn .4s ease both; }
     .success-screen.active { display:flex; }
-    .success-icon { width:72px; height:72px; background:rgba(63,185,80,.15); border:2px solid var(--tg-success); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:32px; animation:popIn .5s cubic-bezier(.34,1.56,.64,1) .2s both; }
-    .success-screen h2 { font-family:'Unbounded',sans-serif; font-size:18px; font-weight:700; color:var(--tg-success); }
-    .success-screen p  { font-size:14px; color:var(--tg-muted); line-height:1.6; max-width:280px; }
+    .success-icon { width:80px; height:80px; background:rgba(63,185,80,.12); border:2px solid var(--success); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:36px; animation:popIn .5s cubic-bezier(.34,1.56,.64,1) .2s both; }
+    .success-screen h2 { font-family:'Unbounded',sans-serif; font-size:20px; font-weight:700; color:var(--success); }
+    .success-screen p  { font-size:14px; color:var(--muted); line-height:1.7; max-width:280px; }
+    .channels-done { display:flex; flex-direction:column; gap:8px; width:100%; margin-top:4px; }
+    .ch-done-item { display:flex; align-items:center; gap:10px; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:10px 14px; font-size:13px; }
+    .ch-done-item span:first-child { font-size:18px; }
+    .ch-done-item .ch-done-name { flex:1; font-weight:500; }
+    .ch-done-item .ch-done-check { color:var(--success); font-weight:700; }
 
-    .result-card { background:var(--tg-surface); border:1px solid var(--tg-border); border-radius:var(--radius); padding:16px; width:100%; text-align:left; margin-top:8px; }
-    .result-row  { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--tg-border); font-size:13px; }
-    .result-row:last-child { border-bottom:none; }
-    .result-row span:first-child { color:var(--tg-muted); }
-    .result-row span:last-child  { color:var(--tg-text); font-weight:500; max-width:55%; text-align:right; }
-
-    .send-status { display:flex; flex-direction:column; gap:8px; width:100%; margin-top:4px; }
-    .send-item { display:flex; align-items:center; gap:8px; font-size:12px; color:var(--tg-muted); }
-    .send-item .dot { width:8px; height:8px; border-radius:50%; background:var(--tg-muted); flex-shrink:0; }
-    .send-item.ok   .dot { background:var(--tg-success); }
-    .send-item.fail .dot { background:var(--tg-error); }
-    .send-item.ok   { color:var(--tg-success); }
-    .send-item.fail { color:var(--tg-error); }
+    .btn-close { width:100%; padding:15px; background:linear-gradient(135deg,var(--accent),var(--accent2)); border:none; border-radius:12px; color:#fff; font-family:'DM Sans',sans-serif; font-size:15px; font-weight:700; cursor:pointer; box-shadow:0 4px 20px rgba(46,166,245,.3); margin-top:8px; }
 
     @keyframes slideDown { from{opacity:0;transform:translateY(-16px)} to{opacity:1;transform:translateY(0)} }
     @keyframes fadeIn    { from{opacity:0;transform:translateY(10px)}  to{opacity:1;transform:translateY(0)} }
     @keyframes popIn     { from{transform:scale(0)} to{transform:scale(1)} }
-    @keyframes spin      { to{transform:rotate(360deg)} }
   </style>
 </head>
 <body>
 <div class="wrapper">
 
-  <div class="profile-card" id="profileCard">
-    <div class="avatar" id="avatarEl">👤</div>
-    <div class="profile-info">
-      <h3 id="userNameEl">Yükleniyor...</h3>
-      <p id="userHandleEl">@telegram</p>
+  <div class="app-header">
+    <div class="app-logo">Hür Yazılım</div>
+    <p class="app-sub">Kanallarımızı takip ederek güncel yazılım haberlerine ulaşın.</p>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-top">
+      <span id="stepLabel">Adım 1 / 4</span>
+      <span id="stepPct">0%</span>
     </div>
-    <span class="badge" id="userIdBadge">ID: —</span>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
   </div>
 
-  <div class="header">
-    <h1>Hızlı Anket</h1>
-    <p>Görüşlerinizi paylaşın, birlikte daha iyi olalım.</p>
-  </div>
-
-  <div class="progress-label">
-    <span id="stepLabel">Adım 1 / 4</span>
-    <span id="stepPct">0%</span>
-  </div>
-  <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
-
-  <!-- STEP 1 -->
+  <!-- ── STEP 1 ── -->
   <div class="step active" id="step1">
-    <div class="step-title">👋 Sizi tanıyalım</div>
-    <div class="input-group"><label>Adınız</label><input type="text" id="fieldName" placeholder="Adınızı girin..." maxlength="40" /></div>
-    <div class="input-group"><label>Yaşınız</label><input type="number" id="fieldAge" placeholder="örn. 25" min="1" max="120" /></div>
-    <div class="btn-row"><button class="btn btn-primary" onclick="nextStep(1)">Devam →</button></div>
+    <div class="channel-card">
+      <div class="channel-top">
+        <div class="ch-avatar">💻</div>
+        <div class="ch-info">
+          <h3>Hür Yazılım</h3>
+          <p>Yazılım, teknoloji ve yapay zeka haberleri her gün burada.</p>
+        </div>
+      </div>
+      <div class="ch-tag">📢 @hursoft</div>
+      <div class="disclaimer">
+        <strong>⚖️ Yasal Uyarı</strong>
+        Bu yazılımlar yalnızca yasal kullanım amaçlı geliştirilmiştir. Yazılımın kullanım şekli ve doğuracağı sonuçlardan tamamen kullanıcı sorumludur. Geliştirici taraf, üçüncü kişilerin yasa dışı faaliyetlerinden hiçbir şekilde sorumlu tutulamaz.
+      </div>
+    </div>
+    <div class="visited-badge" id="badge1">✅ Kanala katıldınız, devam edebilirsiniz.</div>
+    <button class="btn-cta" id="cta1" onclick="openChannel(1, 'https://t.me/hursoft')">
+      Kanala Katıl <span class="arrow">→</span>
+    </button>
+    <button class="btn-next" id="next1" onclick="goNext(1)">Sonraki adım →</button>
   </div>
 
-  <!-- STEP 2 -->
+  <!-- ── STEP 2 ── -->
   <div class="step" id="step2">
-    <div class="step-title">📌 Sizi en iyi tanımlayan?</div>
-    <div class="options-grid">
-      <button class="option-btn" onclick="selectOption(this,'category')">👨‍💻 Yazılımcı</button>
-      <button class="option-btn" onclick="selectOption(this,'category')">🎨 Tasarımcı</button>
-      <button class="option-btn" onclick="selectOption(this,'category')">📊 Analist</button>
-      <button class="option-btn" onclick="selectOption(this,'category')">🚀 Girişimci</button>
-      <button class="option-btn" onclick="selectOption(this,'category')">🎓 Öğrenci</button>
-      <button class="option-btn" onclick="selectOption(this,'category')">🔧 Diğer</button>
+    <div class="channel-card">
+      <div class="channel-top">
+        <div class="ch-avatar">🤖</div>
+        <div class="ch-info">
+          <h3>Hür Bot Lab</h3>
+          <p>Telegram botları, otomasyon araçları ve açık kaynak projeler.</p>
+        </div>
+      </div>
+      <div class="ch-tag">📢 @hursoft</div>
+      <div class="disclaimer">
+        <strong>⚖️ Yasal Uyarı</strong>
+        Bu yazılımlar yalnızca yasal kullanım amaçlı geliştirilmiştir. Yazılımın kullanım şekli ve doğuracağı sonuçlardan tamamen kullanıcı sorumludur. Geliştirici taraf, üçüncü kişilerin yasa dışı faaliyetlerinden hiçbir şekilde sorumlu tutulamaz.
+      </div>
     </div>
-    <div class="btn-row">
-      <button class="btn btn-secondary" onclick="prevStep(2)">← Geri</button>
-      <button class="btn btn-primary"   onclick="nextStep(2)">Devam →</button>
-    </div>
+    <div class="visited-badge" id="badge2">✅ Kanala katıldınız, devam edebilirsiniz.</div>
+    <button class="btn-cta" id="cta2" onclick="openChannel(2, 'https://t.me/hursoft')">
+      Kanala Katıl <span class="arrow">→</span>
+    </button>
+    <button class="btn-next" id="next2" onclick="goNext(2)">Sonraki adım →</button>
   </div>
 
-  <!-- STEP 3 -->
+  <!-- ── STEP 3 ── -->
   <div class="step" id="step3">
-    <div class="step-title">💬 Görüşünüz</div>
-    <div class="input-group"><label>Bu uygulamayı nasıl buldunuz?</label><textarea id="fieldComment" placeholder="Düşüncelerinizi paylaşın..."></textarea></div>
-    <div class="btn-row">
-      <button class="btn btn-secondary" onclick="prevStep(3)">← Geri</button>
-      <button class="btn btn-primary"   onclick="nextStep(3)">Devam →</button>
+    <div class="channel-card">
+      <div class="channel-top">
+        <div class="ch-avatar">🛡️</div>
+        <div class="ch-info">
+          <h3>Hür Güvenlik</h3>
+          <p>Siber güvenlik, veri gizliliği ve dijital haklar üzerine içerikler.</p>
+        </div>
+      </div>
+      <div class="ch-tag">📢 @hursoft</div>
+      <div class="disclaimer">
+        <strong>⚖️ Yasal Uyarı</strong>
+        Bu yazılımlar yalnızca yasal kullanım amaçlı geliştirilmiştir. Yazılımın kullanım şekli ve doğuracağı sonuçlardan tamamen kullanıcı sorumludur. Geliştirici taraf, üçüncü kişilerin yasa dışı faaliyetlerinden hiçbir şekilde sorumlu tutulamaz.
+      </div>
     </div>
+    <div class="visited-badge" id="badge3">✅ Kanala katıldınız, devam edebilirsiniz.</div>
+    <button class="btn-cta" id="cta3" onclick="openChannel(3, 'https://t.me/hursoft')">
+      Kanala Katıl <span class="arrow">→</span>
+    </button>
+    <button class="btn-next" id="next3" onclick="goNext(3)">Sonraki adım →</button>
   </div>
 
-  <!-- STEP 4 -->
+  <!-- ── STEP 4 ── -->
   <div class="step" id="step4">
-    <div class="step-title">⭐ Değerlendirme</div>
-    <p style="color:var(--tg-muted);font-size:13px;margin-bottom:4px;">Uygulamaya kaç yıldız verirsiniz?</p>
-    <div class="stars">
-      <span class="star" onclick="setRating(1)">⭐</span>
-      <span class="star" onclick="setRating(2)">⭐</span>
-      <span class="star" onclick="setRating(3)">⭐</span>
-      <span class="star" onclick="setRating(4)">⭐</span>
-      <span class="star" onclick="setRating(5)">⭐</span>
+    <div class="channel-card">
+      <div class="channel-top">
+        <div class="ch-avatar">🚀</div>
+        <div class="ch-info">
+          <h3>Hür Girişim</h3>
+          <p>Startup, yazılım girişimleri ve teknoloji dünyasından haberler.</p>
+        </div>
+      </div>
+      <div class="ch-tag">📢 @hursoft</div>
+      <div class="disclaimer">
+        <strong>⚖️ Yasal Uyarı</strong>
+        Bu yazılımlar yalnızca yasal kullanım amaçlı geliştirilmiştir. Yazılımın kullanım şekli ve doğuracağı sonuçlardan tamamen kullanıcı sorumludur. Geliştirici taraf, üçüncü kişilerin yasa dışı faaliyetlerinden hiçbir şekilde sorumlu tutulamaz.
+      </div>
     </div>
-    <div class="btn-row">
-      <button class="btn btn-secondary" onclick="prevStep(4)">← Geri</button>
-      <button class="btn btn-primary" id="submitBtn" onclick="submitForm()">Gönder 🎉</button>
-    </div>
+    <div class="visited-badge" id="badge4">✅ Kanala katıldınız, devam edebilirsiniz.</div>
+    <button class="btn-cta" id="cta4" onclick="openChannel(4, 'https://t.me/hursoft')">
+      Kanala Katıl <span class="arrow">→</span>
+    </button>
+    <button class="btn-next" id="next4" onclick="goNext(4)">Tamamla 🎉</button>
   </div>
 
-  <!-- SUCCESS -->
+  <!-- ── SUCCESS ── -->
   <div class="success-screen" id="successScreen">
-    <div class="success-icon">✓</div>
-    <h2>Teşekkürler!</h2>
-    <p>Anketiniz başarıyla gönderildi. Geri bildiriminiz bizim için çok değerli.</p>
-    <div class="result-card" id="resultCard"></div>
-    <div class="send-status" id="sendStatus"></div>
-    <button class="btn btn-primary" style="width:100%;margin-top:8px;" onclick="closeApp()">Kapat</button>
+    <div class="success-icon">🎉</div>
+    <h2>Tebrikler!</h2>
+    <p>Tüm adımları tamamladınız. Kanallarımıza katıldığınız için teşekkürler!</p>
+    <div class="channels-done">
+      <div class="ch-done-item"><span>💻</span><span class="ch-done-name">Hür Yazılım</span><span class="ch-done-check">✓</span></div>
+      <div class="ch-done-item"><span>🤖</span><span class="ch-done-name">Hür Bot Lab</span><span class="ch-done-check">✓</span></div>
+      <div class="ch-done-item"><span>🛡️</span><span class="ch-done-name">Hür Güvenlik</span><span class="ch-done-check">✓</span></div>
+      <div class="ch-done-item"><span>🚀</span><span class="ch-done-name">Hür Girişim</span><span class="ch-done-check">✓</span></div>
+    </div>
+    <button class="btn-close" onclick="closeApp()">Kapat</button>
   </div>
+
 </div>
-
-<div class="toast" id="toast"></div>
-
 <script>
-  // ══════════════════════════════════════════════════════
-  //  ⚙️  YAPILANDIRMA — sadece bu bölümü düzenle
-  // ══════════════════════════════════════════════════════
-  const CONFIG = {
-    BOT_TOKEN: '7699277071:AAG7cUJ93zTAr_xIeSeNs0It8x1Xu5pHFPk',   // BotFather'dan: 123456:ABC-DEF...
-    CHAT_ID:   '-1002344492308',     // Sonuçların gideceği chat/grup ID
-  };
-  // ══════════════════════════════════════════════════════
-
   const tg = window.Telegram?.WebApp;
   if (tg) { tg.ready(); tg.expand(); tg.setHeaderColor('#0d1117'); tg.setBackgroundColor('#0d1117'); }
 
-  const user = tg?.initDataUnsafe?.user || null;
-
-  if (user) {
-    const fullName = [user.first_name, user.last_name].filter(Boolean).join(' ');
-    document.getElementById('userNameEl').textContent   = fullName || 'Kullanıcı';
-    document.getElementById('userHandleEl').textContent = user.username ? `@${user.username}` : 'Telegram Kullanıcısı';
-    document.getElementById('userIdBadge').textContent  = `ID: ${user.id}`;
-    const av = document.getElementById('avatarEl');
-    if (user.photo_url) av.innerHTML = `<img src="${user.photo_url}" alt="pp">`;
-    else av.textContent = (user.first_name || 'K')[0].toUpperCase();
-    document.getElementById('fieldName').value = fullName;
-  } else {
-    // Tarayıcı demo modu
-    document.getElementById('userNameEl').textContent   = 'Demo Kullanıcı';
-    document.getElementById('userHandleEl').textContent = '@demo';
-    document.getElementById('userIdBadge').textContent  = 'ID: 12345';
-    document.getElementById('avatarEl').textContent     = 'D';
-  }
-
   let currentStep = 1;
-  const answers   = { category: '', rating: 0 };
 
   function updateProgress(step) {
     const pct = Math.round(((step - 1) / 4) * 100);
@@ -230,126 +272,48 @@
   }
   updateProgress(1);
 
-  function nextStep(from) {
-    if (from === 1) {
-      if (!document.getElementById('fieldName').value.trim()) { shake('fieldName'); return; }
-      if (!document.getElementById('fieldAge').value.trim())  { shake('fieldAge');  return; }
+  function openChannel(step, url) {
+    // Kanala yönlendir
+    if (tg) {
+      tg.openTelegramLink(url);
+    } else {
+      window.open(url, '_blank');
     }
-    if (from === 2 && !answers.category) { showToast('Lütfen bir seçenek seçin.', 'error'); return; }
+
+    // Butonu güncelle
+    const cta   = document.getElementById(`cta${step}`);
+    const next  = document.getElementById(`next${step}`);
+    const badge = document.getElementById(`badge${step}`);
+
+    cta.disabled = true;
+    cta.innerHTML = '✓ Katıldınız';
+    cta.style.background = 'rgba(63,185,80,.15)';
+    cta.style.color = 'var(--success)';
+    cta.style.boxShadow = 'none';
+    cta.style.border = '1.5px solid rgba(63,185,80,.3)';
+
+    badge.classList.add('show');
+    next.classList.add('visible');
+  }
+
+  function goNext(from) {
+    if (from === 4) {
+      // Tamamlandı
+      document.getElementById(`step${from}`).classList.remove('active');
+      document.querySelector('.app-header').style.display = 'none';
+      document.querySelector('.progress-wrap').style.display = 'none';
+      document.getElementById('successScreen').classList.add('active');
+      return;
+    }
     document.getElementById(`step${from}`).classList.remove('active');
     currentStep = from + 1;
     document.getElementById(`step${currentStep}`).classList.add('active');
     updateProgress(currentStep);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  function prevStep(from) {
-    document.getElementById(`step${from}`).classList.remove('active');
-    currentStep = from - 1;
-    document.getElementById(`step${currentStep}`).classList.add('active');
-    updateProgress(currentStep);
-  }
-
-  function selectOption(el, key) {
-    el.closest('.options-grid').querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
-    el.classList.add('selected');
-    answers[key] = el.textContent.trim();
-  }
-
-  function setRating(n) {
-    answers.rating = n;
-    document.querySelectorAll('.star').forEach((s, i) => s.classList.toggle('lit', i < n));
-  }
-
-  async function submitForm() {
-    if (!answers.rating) { showToast('Lütfen bir puan verin.', 'error'); return; }
-
-    const btn = document.getElementById('submitBtn');
-    btn.disabled   = true;
-    btn.innerHTML  = '<span class="spinner"></span> Gönderiliyor...';
-
-    const name    = document.getElementById('fieldName').value.trim();
-    const age     = document.getElementById('fieldAge').value.trim();
-    const comment = document.getElementById('fieldComment').value.trim();
-
-    const payload = {
-      user_id:    user?.id       || 'demo',
-      username:   user?.username || 'demo',
-      first_name: user?.first_name || name,
-      name, age,
-      category:   answers.category,
-      comment:    comment || '—',
-      rating:     answers.rating,
-      timestamp:  new Date().toLocaleString('tr-TR'),
-    };
-
-    const results = [];
-
-    // ── 1. Telegram Bot API → sonuç mesajı ────────────────
-    try {
-      const text =
-        `📋 *Yeni Anket Yanıtı*\n\n` +
-        `👤 *Ad:* ${name}\n` +
-        `🎂 *Yaş:* ${age}\n` +
-        `🏷 *Kategori:* ${answers.category}\n` +
-        `⭐ *Puan:* ${'⭐'.repeat(answers.rating)}\n` +
-        `💬 *Yorum:* ${comment || '—'}\n` +
-        `🆔 *User ID:* ${payload.user_id}\n` +
-        `🕐 *Tarih:* ${payload.timestamp}`;
-
-      const r = await fetch(`https://api.telegram.org/bot${CONFIG.BOT_TOKEN}/sendMessage`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chat_id: CONFIG.CHAT_ID, text, parse_mode: 'Markdown' })
-      });
-      const d = await r.json();
-      results.push({ label: '📨 Telegram Bot', ok: d.ok, detail: d.ok ? 'Mesaj gönderildi' : d.description });
-    } catch (e) {
-      results.push({ label: '📨 Telegram Bot', ok: false, detail: e.message });
-    }
-
-    // ── Başarı ekranı ──────────────────────────────────────
-    document.getElementById(`step${currentStep}`).classList.remove('active');
-    ['profileCard', '.header', '.progress-bar', '.progress-label'].forEach(sel => {
-      const el = sel.startsWith('.') ? document.querySelector(sel) : document.getElementById(sel);
-      if (el) el.style.display = 'none';
-    });
-    document.getElementById('successScreen').classList.add('active');
-
-    document.getElementById('resultCard').innerHTML = [
-      ['Ad',       name],
-      ['Yaş',      age],
-      ['Kategori', answers.category],
-      ['Puan',     '⭐'.repeat(answers.rating)],
-      ['Yorum',    comment || '—'],
-    ].map(([k,v]) => `<div class="result-row"><span>${k}</span><span>${v}</span></div>`).join('');
-
-    document.getElementById('sendStatus').innerHTML = results.map(r =>
-      `<div class="send-item ${r.ok ? 'ok' : 'fail'}">
-        <div class="dot"></div>${r.label}: ${r.detail}
-      </div>`
-    ).join('');
-
-    const allOk = results.every(r => r.ok);
-    showToast(allOk ? '✓ Tüm veriler gönderildi' : '⚠ Bazı gönderimlerde sorun oluştu', allOk ? 'success' : 'error');
-  }
-
-  function closeApp() { if (tg) tg.close(); }
-
-  function shake(id) {
-    const el = document.getElementById(id);
-    el.style.borderColor = 'var(--tg-error)';
-    el.style.boxShadow   = '0 0 0 3px rgba(248,81,73,.2)';
-    setTimeout(() => { el.style.borderColor=''; el.style.boxShadow=''; }, 1500);
-    el.focus();
-  }
-
-  let toastTimer;
-  function showToast(msg, type='') {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.className   = `toast ${type} show`;
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
+  function closeApp() {
+    if (tg) tg.close();
   }
 </script>
 </body>
